@@ -23,7 +23,19 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
 
     // Use the Kotlin JDK 8 standard library.
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk11")
+
+    // Use AST
+    implementation("org.eclipse.jdt:org.eclipse.jdt.core:3.21.0")
+
+    // Use Logger
+    implementation("ch.qos.logback:logback-classic:1.1.3")
+
+    // Use hash method
+    implementation("com.google.guava:guava:27.0.1-jre")
+
+    // Use args4j
+    implementation("args4j:args4j:2.33")
 
     // Use the Kotlin test library.
     testImplementation("org.jetbrains.kotlin:kotlin-test")
