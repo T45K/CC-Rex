@@ -34,7 +34,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.1.3")
 
     // Use hash method
-    implementation("com.google.guava:guava:27.0.1-jre")
+    implementation("com.google.guava:guava:28.2-jre")
 
     // Use args4j
     implementation("args4j:args4j:2.33")

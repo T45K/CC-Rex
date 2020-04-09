@@ -26,16 +26,10 @@ class ASTConstructor {
                         val sourceFileEntries: Array<String> = list.map { it.parent.toString() }.distinct().toTypedArray()
                         parser.setEnvironment(classpathEntries, sourceFileEntries, null, true)
 
-                        val filesASTs = mutableListOf<FileAST>()
-                        val myRequestor = object : FileASTRequestor() {
-                            override fun acceptAST(sourceFilePath: String?, ast: CompilationUnit?) {
-                                filesASTs.add(Path.of(sourceFilePath)!! to ast!!)
-                            }
-                        }
-
+                        val myRequester = MyASTRequester()
                         val sourceFilePaths: Array<String> = list.map { it.toString() }.toTypedArray()
-                        parser.createASTs(sourceFilePaths, null, arrayOf(), myRequestor, NullProgressMonitor())
-                        Observable.fromIterable(filesASTs)
+                        parser.createASTs(sourceFilePaths, null, arrayOf(), myRequester, NullProgressMonitor())
+                        Observable.fromIterable(myRequester.filesASTs)
                     }
                     .doFinally { logger.info("[End]") }
 
@@ -54,5 +48,13 @@ class ASTConstructor {
         parser.setResolveBindings(true)
 
         return parser
+    }
+}
+
+private class MyASTRequester : FileASTRequestor() {
+    val filesASTs = mutableListOf<FileAST>()
+
+    override fun acceptAST(sourceFilePath: String?, ast: CompilationUnit?) {
+        filesASTs.add(Path.of(sourceFilePath!!) to ast!!)
     }
 }
