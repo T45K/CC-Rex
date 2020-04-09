@@ -3,6 +3,7 @@ package io.github.t45k.ccrex.loopProcess.cloneDetection
 import io.github.t45k.ccrex.entity.CodeBlock
 import io.github.t45k.ccrex.entity.FileAST
 import io.reactivex.Observable
+import io.reactivex.rxkotlin.toObservable
 import org.eclipse.jdt.core.dom.ASTVisitor
 import org.eclipse.jdt.core.dom.Block
 import org.eclipse.jdt.core.dom.CompilationUnit
@@ -14,15 +15,22 @@ import org.eclipse.jdt.core.dom.SwitchStatement
 import org.eclipse.jdt.core.dom.SynchronizedStatement
 import org.eclipse.jdt.core.dom.TryStatement
 import org.eclipse.jdt.core.dom.WhileStatement
+import org.slf4j.LoggerFactory
 import java.nio.file.Path
 
-fun extractCodeBlocks(fileAST: FileAST): Observable<CodeBlock> =
-        Observable.just(fileAST)
-                .flatMap {
-                    val visitor = CodeBlockExtractVisitor(it)
-                    fileAST.ast.accept(visitor)
-                    Observable.fromIterable(visitor.codeBlocks)
-                }
+class CodeBlockExtractor {
+    private val logger = LoggerFactory.getLogger(this::class.java)
+
+    fun extract(fileAST: FileAST): Observable<CodeBlock> =
+            Observable.just(fileAST)
+                    .doOnSubscribe { logger.debug("[Begin]\textract CodeBlocks in\t${fileAST.filePath}") }
+                    .flatMap {
+                        val visitor = CodeBlockExtractVisitor(it)
+                        fileAST.ast.accept(visitor)
+                        visitor.codeBlocks.toObservable()
+                    }
+                    .doFinally { logger.debug("[End]\textract CodeBlocks in\t${fileAST.filePath}") }
+}
 
 private class CodeBlockExtractVisitor(fileAST: FileAST) : ASTVisitor() {
     companion object {
@@ -78,18 +86,18 @@ private class CodeBlockExtractVisitor(fileAST: FileAST) : ASTVisitor() {
     }
 
     private fun MutableList<CodeBlock>.addIfNeeded(node: Statement) {
-        if (node.isLessThanLineThreshold()) {
+        if (node.isMoreThanLineThreshold()) {
             this.add(CodeBlock(node, filePath, node.startPosition))
         }
     }
 
-    private fun Statement.isLessThanLineThreshold(): Boolean {
+    private fun Statement.isMoreThanLineThreshold(): Boolean {
         val startLine: Int = compilationUnit.getLineNumber(this.startPosition)
         val endLine: Int = compilationUnit.getLineNumber(this.startPosition + this.length - 1)
         return if (this is Block) {
-            endLine - startLine - 1 <= LINE_THRESHOLD
+            endLine - startLine - 1 >= LINE_THRESHOLD
         } else {
-            endLine - startLine + 1 <= LINE_THRESHOLD
+            endLine - startLine + 1 >= LINE_THRESHOLD
         }
     }
 }

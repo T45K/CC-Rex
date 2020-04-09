@@ -2,7 +2,6 @@ package io.github.t45k.ccrex.loopProcess
 
 import io.github.t45k.ccrex.entity.FileAST
 import io.github.t45k.ccrex.entity.to
-import io.reactivex.Observable
 import org.eclipse.core.runtime.NullProgressMonitor
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.core.dom.AST
@@ -16,22 +15,22 @@ import java.nio.file.Path
 class ASTConstructor {
     private val logger = LoggerFactory.getLogger(ASTConstructor::class.java)
 
-    fun construct(filePathList: List<Path>, classpathEntryList: List<Path>): Observable<FileAST> =
-            Observable.just(filePathList)
-                    .doOnSubscribe { logger.info("[Start]\nconstructing\nASTs") }
-                    .flatMap { list ->
-                        val parser: ASTParser = createParser()
+    fun construct(filePathList: List<Path>, classpathEntryList: List<Path>): List<FileAST> {
+        logger.debug("[Begin]\tconstructing ASTs")
 
-                        val classpathEntries: Array<String> = classpathEntryList.map { it.toString() }.toTypedArray()
-                        val sourceFileEntries: Array<String> = list.map { it.parent.toString() }.distinct().toTypedArray()
-                        parser.setEnvironment(classpathEntries, sourceFileEntries, null, true)
+        val parser: ASTParser = createParser()
 
-                        val myRequester = MyASTRequester()
-                        val sourceFilePaths: Array<String> = list.map { it.toString() }.toTypedArray()
-                        parser.createASTs(sourceFilePaths, null, arrayOf(), myRequester, NullProgressMonitor())
-                        Observable.fromIterable(myRequester.filesASTs)
-                    }
-                    .doFinally { logger.info("[End]") }
+        val classpathEntries: Array<String> = classpathEntryList.map { it.toString() }.toTypedArray()
+        val sourceFileEntries: Array<String> = filePathList.map { it.parent.toString() }.distinct().toTypedArray()
+        parser.setEnvironment(classpathEntries, sourceFileEntries, null, true)
+
+        val myRequester = MyASTRequester()
+        val sourceFilePaths: Array<String> = filePathList.map { it.toString() }.toTypedArray()
+        parser.createASTs(sourceFilePaths, null, arrayOf(), myRequester, NullProgressMonitor())
+
+        logger.debug("[End]\tconstructing ASTs")
+        return myRequester.filesASTs
+    }
 
     @Suppress("UNCHECKED_CAST")
     private fun createParser(): ASTParser {

@@ -1,8 +1,8 @@
 package io.github.t45k.ccrex.loopProcess.cloneDetection
 
-import com.google.common.hash.Hashing
 import io.github.t45k.ccrex.util.getNodeInCopiedStatement
 import io.github.t45k.ccrex.util.replaceNode
+import org.apache.commons.codec.digest.DigestUtils
 import org.eclipse.jdt.core.dom.ASTNode
 import org.eclipse.jdt.core.dom.ASTVisitor
 import org.eclipse.jdt.core.dom.BooleanLiteral
@@ -26,7 +26,7 @@ class StatementNormalizer {
     fun normalize(statement: Statement): String {
         val visitor = StatementNormalizeVisitor(statement)
         statement.accept(visitor)
-        return Hashing.sha256().newHasher().putString(visitor.copiedStatement.toString(), Charsets.UTF_8).hash().toString()
+        return DigestUtils.sha256Hex(visitor.copiedStatement.toString())
     }
 }
 

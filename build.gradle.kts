@@ -10,7 +10,7 @@ plugins {
 
 val compileKotlin: KotlinCompile by tasks
 
-compileKotlin.kotlinOptions{
+compileKotlin.kotlinOptions {
     jvmTarget = "1.8"
 }
 
@@ -34,7 +34,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.1.3")
 
     // Use hash method
-    implementation("com.google.guava:guava:28.2-jre")
+    implementation("commons-codec:commons-codec:1.14")
 
     // Use args4j
     implementation("args4j:args4j:2.33")

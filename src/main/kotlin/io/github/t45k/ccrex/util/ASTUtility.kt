@@ -13,7 +13,7 @@ fun replaceNode(oldNode: ASTNode, newNode: ASTNode?) {
     val copiedNode: ASTNode = ASTNode.copySubtree(oldNode.ast, newNode)
     when {
         locationInParent.isChildListProperty -> {
-            val siblings: Array<ASTNode> = oldNode.parent.getStructuralProperty(locationInParent) as Array<ASTNode>
+            val siblings: MutableList<ASTNode> = oldNode.parent.getStructuralProperty(locationInParent) as MutableList<ASTNode>
             val replaceIndex: Int = siblings.indexOf(oldNode)
             siblings[replaceIndex] = copiedNode
         }
